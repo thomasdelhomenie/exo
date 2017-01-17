@@ -12,10 +12,19 @@
 FROM       exoplatform/base-jdk:jdk8
 MAINTAINER eXo Platform <docker@exoplatform.com>
 
+# Install the needed packages
+RUN apt-get -qq update && \
+  apt-get -qq -y upgrade ${_APT_OPTIONS} && \
+  apt-get -qq -y install ${_APT_OPTIONS} libreoffice-calc libreoffice-draw libreoffice-impress libreoffice-math libreoffice-writer && \
+  apt-get -qq -y autoremove && \
+  apt-get -qq -y clean && \
+  rm -rf /var/lib/apt/lists/*
+
 # Environment variables
-ENV EXO_VERSION_FULL    4.3.1-CP01
-ENV EXO_VERSION_MINOR   4.3
-ENV EXO_DOWNLOAD        http://storage.exoplatform.org/downloads/Releases/Platform/${EXO_VERSION_MINOR}/${EXO_VERSION_FULL}/platform-${EXO_VERSION_FULL}.zip
+ARG EXO_VERSION_FULL=4.3.1-CP01
+ARG EXO_VERSION_MINOR=4.3
+ARG EXO_DOWNLOAD=http://storage.exoplatform.org/downloads/Releases/Platform/${EXO_VERSION_MINOR}/${EXO_VERSION_FULL}/platform-${EXO_VERSION_FULL}.zip
+ARG DOWNLOAD_USER
 
 ENV EXO_APP_DIR     /opt/exo
 ENV EXO_CONF_DIR    /etc/exo
@@ -32,14 +41,6 @@ RUN useradd --create-home -u 999 --user-group --shell /bin/bash ${EXO_USER}
 # giving all rights to eXo user
 RUN echo "exo   ALL = NOPASSWD: ALL" > /etc/sudoers.d/exo && chmod 440 /etc/sudoers.d/exo
 
-# Install the needed packages
-RUN apt-get -qq update && \
-  apt-get -qq -y upgrade ${_APT_OPTIONS} && \
-  apt-get -qq -y install ${_APT_OPTIONS} libreoffice-calc libreoffice-draw libreoffice-impress libreoffice-math libreoffice-writer && \
-  apt-get -qq -y autoremove && \
-  apt-get -qq -y clean && \
-  rm -rf /var/lib/apt/lists/*
-
 # Create needed directories
 # RUN mkdir -p ${EXO_APP_DIR}
 RUN mkdir -p ${EXO_DATA_DIR}    && chown ${EXO_USER}:${EXO_GROUP} ${EXO_DATA_DIR}
@@ -50,7 +51,8 @@ RUN mkdir -p ${EXO_TMP_DIR}     && chown ${EXO_USER}:${EXO_GROUP} ${EXO_TMP_DIR}
 RUN mkdir -p ${EXO_LOG_DIR}     && chown ${EXO_USER}:${EXO_GROUP} ${EXO_LOG_DIR}
 
 # Install eXo Platform
-RUN curl -L -o /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip ${EXO_DOWNLOAD} && \
+RUN set -x && if [ -n "${DOWNLOAD_USER}" ]; then PARAMS="-u ${DOWNLOAD_USER}"; fi && \
+    curl ${PARAMS} -L -o /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip "${EXO_DOWNLOAD}" && \
     unzip -q /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip -d /srv/downloads/ && \
     rm -f /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip && \
     mv /srv/downloads/platform-${EXO_VERSION_FULL} ${EXO_APP_DIR} && \
@@ -78,8 +80,12 @@ RUN chown ${EXO_USER}:${EXO_GROUP} /etc/exo/chat.properties
 
 USER ${EXO_USER}
 RUN /opt/exo/addon install exo-jdbc-driver-mysql:1.0.0
-RUN /opt/exo/addon install exo-chat:1.3.0
-RUN /opt/exo/addon install exo-tasks:1.1.0
-RUN /opt/exo/addon install exo-remote-edit:1.1.0
+
+ARG ADDONS
+
+RUN for a in ${ADDONS}; do echo "Installing addon $a"; /opt/exo/addon install --no-compat $a; done
+#RUN /opt/exo/addon install --no-compat exo-chat:1.4.0
+#RUN /opt/exo/addon install --no-compat exo-tasks:1.2.0
+#RUN /opt/exo/addon install --no-compat exo-remote-edit:1.2.0
 
 CMD [ "/opt/exo/start_eXo.sh" ]
