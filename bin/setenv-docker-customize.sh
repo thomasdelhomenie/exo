@@ -30,6 +30,9 @@ set +u		# DEACTIVATE unbound variable check
 [ -z "${EXO_DATA_DIR}" ] && EXO_DATA_DIR="/srv/exo"
 [ -z "${EXO_CHAT_DB_HOSTNAME}" ] && EXO_CHAT_DB_HOSTNAME="mongo"
 [ -z "${EXO_CHAT_DB_PORT}" ] && EXO_CHAT_DB_PORT="27017"
+[ -z "${EXO_ES_EMBEDDED}" ] && EXO_ES_EMBEDDED="true"
+[ -z "${EXO_ES_HOST}" ] && EXO_ES_HOST="localhost"
+[ -z "${EXO_ES_PORT}" ] && EXO_ES_PORT="9200"
 set -u		# REACTIVATE unbound variable check
 
 # -----------------------------------------------------------------------------
@@ -113,6 +116,14 @@ fi
 # -----------------------------------------------------------------------------
 CATALINA_OPTS="${CATALINA_OPTS:-} -Dchat.dbServerHost=${EXO_CHAT_DB_HOSTNAME}"
 CATALINA_OPTS="${CATALINA_OPTS:-} -Dchat.dbServerPort=${EXO_CHAT_DB_PORT}"
+
+# -----------------------------------------------------------------------------
+# Configure elasticsearch properties
+# -----------------------------------------------------------------------------
+EXO_ES_SERVER_URL="http://${EXO_ES_HOST}:${EXO_ES_PORT}"
+CATALINA_OPTS="${CATALINA_OPTS:-} -Dexo.es.embedded.enabled=${EXO_ES_EMBEDDED}"
+CATALINA_OPTS="${CATALINA_OPTS:-} -Dexo.es.search.server.url=${EXO_ES_SERVER_URL}"
+CATALINA_OPTS="${CATALINA_OPTS:-} -Dexo.es.index.server.url=${EXO_ES_SERVER_URL}"
 
 # -----------------------------------------------------------------------------
 # Define a better place for eXo Platform license file
