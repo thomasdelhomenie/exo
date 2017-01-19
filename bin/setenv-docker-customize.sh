@@ -28,6 +28,8 @@ set +u		# DEACTIVATE unbound variable check
 [ -z "${EXO_DB_HOST}" ] && EXO_DB_HOST="mysql"
 [ -z "${EXO_DB_PORT}" ] && EXO_DB_PORT="3306"
 [ -z "${EXO_DATA_DIR}" ] && EXO_DATA_DIR="/srv/exo"
+[ -z "${EXO_CHAT_DB_HOSTNAME}" ] && EXO_CHAT_DB_HOSTNAME="mongo"
+[ -z "${EXO_CHAT_DB_PORT}" ] && EXO_CHAT_DB_PORT="27017"
 set -u		# REACTIVATE unbound variable check
 
 # -----------------------------------------------------------------------------
@@ -106,6 +108,11 @@ fi
 if [ -f /etc/exo/chat.properties ]; then
   sed -i 's/^chatPassPhrase=.*$/chatPassPhrase='"$(tr -dc '[:alnum:]' < /dev/urandom  | dd bs=4 count=6 2>/dev/null)"'/' /etc/exo/chat.properties
 fi
+# -----------------------------------------------------------------------------
+# Configure chat database server and port
+# -----------------------------------------------------------------------------
+CATALINA_OPTS="${CATALINA_OPTS:-} -Dchat.dbServerHost=${EXO_CHAT_DB_HOSTNAME}"
+CATALINA_OPTS="${CATALINA_OPTS:-} -Dchat.dbServerPort=${EXO_CHAT_DB_PORT}"
 
 # -----------------------------------------------------------------------------
 # Define a better place for eXo Platform license file
