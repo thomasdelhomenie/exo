@@ -55,7 +55,7 @@ RUN set -x && if [ -n "${DOWNLOAD_USER}" ]; then PARAMS="-u ${DOWNLOAD_USER}"; f
     curl ${PARAMS} -L -o /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip "${EXO_DOWNLOAD}" && \
     unzip -q /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip -d /srv/downloads/ && \
     rm -f /srv/downloads/eXo-Platform-${EXO_VERSION_FULL}.zip && \
-    mv /srv/downloads/platform-${EXO_VERSION_FULL} ${EXO_APP_DIR} && \
+    mv /srv/downloads/platform-${EXO_VERSION_FULL}* ${EXO_APP_DIR} && \
     # ln -s ${EXO_APP_DIR}/platform-${EXO_VERSION}-${EXO_EDITION} ${EXO_APP_DIR} && \
     chown -R ${EXO_USER}:${EXO_GROUP} ${EXO_APP_DIR}
 RUN ln -s ${EXO_APP_DIR}/gatein/conf /etc/exo
