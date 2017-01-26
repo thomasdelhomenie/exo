@@ -61,7 +61,6 @@ RUN set -x && if [ -n "${DOWNLOAD_USER}" ]; then PARAMS="-u ${DOWNLOAD_USER}"; f
 RUN ln -s ${EXO_APP_DIR}/gatein/conf /etc/exo
 RUN rm -rf ${EXO_APP_DIR}/logs && ln -s ${EXO_LOG_DIR} ${EXO_APP_DIR}/logs
 
-
 # Install Docker customization file
 ADD bin/setenv-docker-customize.sh ${EXO_APP_DIR}/bin/setenv-docker-customize.sh
 RUN chmod 755 ${EXO_APP_DIR}/bin/setenv-docker-customize.sh & chown ${EXO_USER}:${EXO_GROUP} ${EXO_APP_DIR}/bin/setenv-docker-customize.sh
